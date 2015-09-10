@@ -6,4 +6,4 @@ BirdGraphicsComponent.prototype.draw = function() {
 	console.log("Drawing a bird");
 };
 
-export.BirdGraphicsComponent = BirdGraphicsComponent;
+exports.BirdGraphicsComponent = BirdGraphicsComponent;
