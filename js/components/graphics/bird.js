@@ -6,33 +6,15 @@ var angle = 0;
 
 BirdGraphicsComponent.prototype.draw = function(context) {
 		
-	function drawBlueCir() {
-		context.beginPath(); 
-		var radius = 25 + 150 * Math.abs(Math.cos(angle));
-		context.arc(225, 225, radius, 0, Math.PI * 2, false);
-		context.closePath();
+	var position = this.entity.components.physics.position;
 
-		context.fillStyle = "#006699";
-		context.fill();
-
-		angle += Math.PI / 64;
-	}
-
-	function drawRedCir() {
-		context.beginPath(); 
-		var radius = 25 + 50 * Math.abs(Math.cos(angle));
-		context.arc(450, 450, radius, 0, Math.PI * 2, false);
-		context.closePath();
-
-		context.fillStyle = "#FF0000";
-		context.fill();
-
-		angle += Math.PI / 64;
-	}
-
-	drawBlueCir();
-	drawRedCir();
-	
+	context.save();
+	context.translate(position.x, position.y);
+	context.beginPath();
+	context.arc(0, 0, 0.02, 0, 2 * Math.PI);
+	context.fill();
+	context.closePath();
+	context.restore();	
 };
 
 exports.BirdGraphicsComponent = BirdGraphicsComponent;

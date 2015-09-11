@@ -7,44 +7,59 @@ var angle = 0;
 
 BirdGraphicsComponent.prototype.draw = function(context) {
 		
-	function drawBlueCir() {
-		context.beginPath(); 
-		var radius = 25 + 150 * Math.abs(Math.cos(angle));
-		context.arc(225, 225, radius, 0, Math.PI * 2, false);
-		context.closePath();
+	var position = this.entity.components.physics.position;
 
-		context.fillStyle = "#006699";
-		context.fill();
-
-		angle += Math.PI / 64;
-	}
-
-	function drawRedCir() {
-		context.beginPath(); 
-		var radius = 25 + 50 * Math.abs(Math.cos(angle));
-		context.arc(450, 450, radius, 0, Math.PI * 2, false);
-		context.closePath();
-
-		context.fillStyle = "#FF0000";
-		context.fill();
-
-		angle += Math.PI / 64;
-	}
-
-	drawBlueCir();
-	drawRedCir();
-	
+	context.save();
+	context.translate(position.x, position.y);
+	context.beginPath();
+	context.arc(0, 0, 0.02, 0, 2 * Math.PI);
+	context.fill();
+	context.closePath();
+	context.restore();	
 };
 
 exports.BirdGraphicsComponent = BirdGraphicsComponent;
 },{}],2:[function(require,module,exports){
+var PhysicsComponent = function(entity) {
+	this.entity = entity;
+
+	this.position = {
+		x: 0,
+		y: 0
+	};
+	this.velocity = {
+		x: 0,
+		y: 0
+	};
+	this.acceleration = {
+		x: 0,
+		y: 0
+	};
+};
+
+PhysicsComponent.prototype.update = function(delta) {
+	this.velocity.x += this.acceleration.x * delta;
+	this.velocity.y += this.acceleration.y * delta;
+
+	this.position.x += this.velocity.x * delta;
+	this.position.y += this.velocity.y * delta;
+};
+
+exports.PhysicsComponent = PhysicsComponent;
+},{}],3:[function(require,module,exports){
 var graphicsComponent = require("../components/graphics/bird");
+var physicsComponent = require("../components/physics/physics");
 
 var Bird = function() {
 	console.log("Creating Bird entity");
+	var physics = new physicsComponent.PhysicsComponent(this);
+	physics.position.y = 0.5;
+	physics.acceleration.y = -2;  //Gravity strength setting
 
 	var graphics = new graphicsComponent.BirdGraphicsComponent(this);
+	
 	this.components = {
+		physics: physics,
 		graphics: graphics
 	};
 };
@@ -52,4 +67,4 @@ var Bird = function() {
 exports.Bird = Bird;
 
 
-},{"../components/graphics/bird":1}]},{},[2]);
+},{"../components/graphics/bird":1,"../components/physics/physics":2}]},{},[3]);

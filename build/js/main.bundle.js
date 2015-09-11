@@ -7,33 +7,15 @@ var angle = 0;
 
 BirdGraphicsComponent.prototype.draw = function(context) {
 		
-	function drawBlueCir() {
-		context.beginPath(); 
-		var radius = 25 + 150 * Math.abs(Math.cos(angle));
-		context.arc(225, 225, radius, 0, Math.PI * 2, false);
-		context.closePath();
+	var position = this.entity.components.physics.position;
 
-		context.fillStyle = "#006699";
-		context.fill();
-
-		angle += Math.PI / 64;
-	}
-
-	function drawRedCir() {
-		context.beginPath(); 
-		var radius = 25 + 50 * Math.abs(Math.cos(angle));
-		context.arc(450, 450, radius, 0, Math.PI * 2, false);
-		context.closePath();
-
-		context.fillStyle = "#FF0000";
-		context.fill();
-
-		angle += Math.PI / 64;
-	}
-
-	drawBlueCir();
-	drawRedCir();
-	
+	context.save();
+	context.translate(position.x, position.y);
+	context.beginPath();
+	context.arc(0, 0, 0.02, 0, 2 * Math.PI);
+	context.fill();
+	context.closePath();
+	context.restore();	
 };
 
 exports.BirdGraphicsComponent = BirdGraphicsComponent;
@@ -48,13 +30,46 @@ PipeGraphicsComponent.prototype.draw = function() {
 
 exports.PipeGraphicsComponent = PipeGraphicsComponent;
 },{}],3:[function(require,module,exports){
+var PhysicsComponent = function(entity) {
+	this.entity = entity;
+
+	this.position = {
+		x: 0,
+		y: 0
+	};
+	this.velocity = {
+		x: 0,
+		y: 0
+	};
+	this.acceleration = {
+		x: 0,
+		y: 0
+	};
+};
+
+PhysicsComponent.prototype.update = function(delta) {
+	this.velocity.x += this.acceleration.x * delta;
+	this.velocity.y += this.acceleration.y * delta;
+
+	this.position.x += this.velocity.x * delta;
+	this.position.y += this.velocity.y * delta;
+};
+
+exports.PhysicsComponent = PhysicsComponent;
+},{}],4:[function(require,module,exports){
 var graphicsComponent = require("../components/graphics/bird");
+var physicsComponent = require("../components/physics/physics");
 
 var Bird = function() {
 	console.log("Creating Bird entity");
+	var physics = new physicsComponent.PhysicsComponent(this);
+	physics.position.y = 0.5;
+	physics.acceleration.y = -2;  //Gravity strength setting
 
 	var graphics = new graphicsComponent.BirdGraphicsComponent(this);
+	
 	this.components = {
+		physics: physics,
 		graphics: graphics
 	};
 };
@@ -62,7 +77,7 @@ var Bird = function() {
 exports.Bird = Bird;
 
 
-},{"../components/graphics/bird":1}],4:[function(require,module,exports){
+},{"../components/graphics/bird":1,"../components/physics/physics":3}],5:[function(require,module,exports){
 var graphicsComponent = require("../components/graphics/pipe");
 
 var Pipe = function() {
@@ -76,29 +91,33 @@ var Pipe = function() {
 
 exports.Pipe = Pipe;
 
-},{"../components/graphics/pipe":2}],5:[function(require,module,exports){
+},{"../components/graphics/pipe":2}],6:[function(require,module,exports){
 var graphicsSystem = require('./systems/graphics');
+var physicsSystem = require('./systems/physics');
+
 var bird = require('./entities/bird');
 var pipe = require('./entities/pipe');
 
 var FlappyBird = function() {
 	this.entities = [new bird.Bird(), new pipe.Pipe()];
 	this.graphics = new graphicsSystem.GraphicsSystem(this.entities);
+	this.physics = new physicsSystem.PhysicsSystem(this.entities);
 };
 
 FlappyBird.prototype.run = function() {
 	this.graphics.run();
+	this.physics.run();
 };
 
 exports.FlappyBird = FlappyBird;
-},{"./entities/bird":3,"./entities/pipe":4,"./systems/graphics":7}],6:[function(require,module,exports){
+},{"./entities/bird":4,"./entities/pipe":5,"./systems/graphics":8,"./systems/physics":9}],7:[function(require,module,exports){
 var flappyBird = require('./flappy_bird');
 
 document.addEventListener('DOMContentLoaded', function() {
 	var app = new flappyBird.FlappyBird();
 	app.run();
 });
-},{"./flappy_bird":5}],7:[function(require,module,exports){
+},{"./flappy_bird":6}],8:[function(require,module,exports){
 var GraphicsSystem = function(entities) {
 	this.entities = entities;
 	// Canvas is where we draw
@@ -123,6 +142,11 @@ GraphicsSystem.prototype.tick = function() {
 	// Clear the canvas
 	this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
+	// Save State
+	this.context.save();
+	this.context.translate(this.canvas.width / 2, this.canvas.height);
+	this.context.scale(this.canvas.height, -this.canvas.height);
+
 	// Rendering goes here
 	for (var i=0; i<this.entities.length; i++) {
 		var entity = this.entities[i];
@@ -133,9 +157,35 @@ GraphicsSystem.prototype.tick = function() {
 		entity.components.graphics.draw(this.context);
 	}
 
+	// Restore State
+	this.context.restore();
+
 	// Continue the render loop
 	window.requestAnimationFrame(this.tick.bind(this));
 };
 
 exports.GraphicsSystem = GraphicsSystem;
-},{}]},{},[6]);
+},{}],9:[function(require,module,exports){
+var PhysicsSystem = function(entities) {
+	this.entities = entities;
+};
+
+PhysicsSystem.prototype.run = function() {
+	//Run the update loop
+	window.setInterval(this.tick.bind(this), 1000 / 60);
+};
+
+PhysicsSystem.prototype.tick = function() {
+	for (var i=0; i<this.entities.length; i++) {
+		var entity = this.entities[i];
+		if (!'physics' in entity.components) {
+			continue;
+		}
+
+		entity.components.physics.update(1/60);
+	}
+};
+
+exports.PhysicsSystem = PhysicsSystem;
+
+},{}]},{},[7]);
