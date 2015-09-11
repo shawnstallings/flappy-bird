@@ -3,8 +3,37 @@ var BirdGraphicsComponent = function(entity) {
 	this.entity = entity;
 };
 
-BirdGraphicsComponent.prototype.draw = function() {
-	console.log("Drawing a bird");
+var angle = 0;
+
+BirdGraphicsComponent.prototype.draw = function(context) {
+		
+	function drawBlueCir() {
+		context.beginPath(); 
+		var radius = 25 + 150 * Math.abs(Math.cos(angle));
+		context.arc(225, 225, radius, 0, Math.PI * 2, false);
+		context.closePath();
+
+		context.fillStyle = "#006699";
+		context.fill();
+
+		angle += Math.PI / 64;
+	}
+
+	function drawRedCir() {
+		context.beginPath(); 
+		var radius = 25 + 50 * Math.abs(Math.cos(angle));
+		context.arc(450, 450, radius, 0, Math.PI * 2, false);
+		context.closePath();
+
+		context.fillStyle = "#FF0000";
+		context.fill();
+
+		angle += Math.PI / 64;
+	}
+
+	drawBlueCir();
+	drawRedCir();
+	
 };
 
 exports.BirdGraphicsComponent = BirdGraphicsComponent;
@@ -72,16 +101,29 @@ document.addEventListener('DOMContentLoaded', function() {
 },{"./flappy_bird":5}],7:[function(require,module,exports){
 var GraphicsSystem = function(entities) {
 	this.entities = entities;
+	// Canvas is where we draw
+	this.canvas = document.getElementById('main-canvas');
+	// Context is what we draw to
+	this.context = this.canvas.getContext('2d');
 };
 
 GraphicsSystem.prototype.run = function() {
-	// Tick the graphics system a few times to see it in action
-	for (var i=0; i<5; i++) {
-		this.tick();
-	}
+	// Run the render loop
+	window.requestAnimationFrame(this.tick.bind(this));
 };
 
 GraphicsSystem.prototype.tick = function() {
+	// Set the canvas to the correct size if the window is resized
+	if (this.canvas.width != this.canvas.offsetWidth ||
+		this.canvas.height != this.canvas.offsetHeight) {
+		this.canvas.width = this.canvas.offsetWidth;
+		this.canvas.height = this.canvas.offsetHeight;
+	}
+
+	// Clear the canvas
+	this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+	// Rendering goes here
 	for (var i=0; i<this.entities.length; i++) {
 		var entity = this.entities[i];
 		if (!'graphics' in entity.components) {
@@ -90,6 +132,9 @@ GraphicsSystem.prototype.tick = function() {
 
 		entity.components.graphics.draw(this.context);
 	}
+
+	// Continue the render loop
+	window.requestAnimationFrame(this.tick.bind(this));
 };
 
 exports.GraphicsSystem = GraphicsSystem;
