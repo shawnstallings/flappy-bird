@@ -52,9 +52,12 @@ gulp.task('scripts', function() {
 	var files = [
 		'./js/components/graphics/bird.js',
 		'./js/components/graphics/pipe.js',
+		'./js/components/physics/physics.js',
 		'./js/entities/bird.js',
 		'./js/entities/pipe.js',
 		'./js/systems/graphics.js',
+		'./js/systems/input.js',
+		'./js/systems/physics.js',
 		'./js/flappy_bird.js',
 		'./js/main.js'
 	];
