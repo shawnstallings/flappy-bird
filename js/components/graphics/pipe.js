@@ -6,11 +6,13 @@ PipeGraphicsComponent.prototype.draw = function(context) {
 	console.log("Drawing a pipe");
 
 	var position = this.entity.components.physics.position;
-
+	
+	context.fillStyle = "#FF0000";
+	
 	context.save();
 	context.translate(position.x, position.y);
-	context.fillStyle = "#FF0000";
-	context.fillRect(0.8, 0, .2, .2);
+	context.fillRect(0.8, 0.6, .15, 1);
+	context.fillRect(0.8, 0, .15, .4);	
 	context.restore();
 };
 

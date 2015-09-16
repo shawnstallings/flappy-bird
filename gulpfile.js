@@ -58,6 +58,7 @@ gulp.task('scripts', function() {
 		'./js/systems/graphics.js',
 		'./js/systems/input.js',
 		'./js/systems/physics.js',
+		'./js/systems/pipes.js',
 		'./js/flappy_bird.js',
 		'./js/main.js'
 	];

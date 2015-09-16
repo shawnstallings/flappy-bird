@@ -28,11 +28,13 @@ PipeGraphicsComponent.prototype.draw = function(context) {
 	console.log("Drawing a pipe");
 
 	var position = this.entity.components.physics.position;
-
+	
+	context.fillStyle = "#FF0000";
+	
 	context.save();
 	context.translate(position.x, position.y);
-	context.fillStyle = "#FF0000";
-	context.fillRect(0.8, 0, .2, .2);
+	context.fillRect(0.8, 0.6, .15, 1);
+	context.fillRect(0.8, 0, .15, .4);	
 	context.restore();
 };
 
@@ -93,7 +95,7 @@ var Pipe = function() {
 	console.log("Creating Pipe entity");
 	var physics = new physicsComponent.PhysicsComponent(this);
 	physics.position.x = 0.5;
-	physics.acceleration.x = -1;  //move speed setting
+	physics.velocity.x = -0.5;  //move speed setting
 
 	var graphics = new graphicsComponent.PipeGraphicsComponent(this);
 	this.components = {
@@ -108,25 +110,35 @@ exports.Pipe = Pipe;
 var graphicsSystem = require('./systems/graphics');
 var physicsSystem = require('./systems/physics');
 var inputSystem = require('./systems/input');
+var pipesSystem = require('./systems/pipes');
 
 var bird = require('./entities/bird');
 var pipe = require('./entities/pipe');
 
 var FlappyBird = function() {
-	this.entities = [new bird.Bird(), new pipe.Pipe()];
+	this.entities = [new bird.Bird()];
 	this.graphics = new graphicsSystem.GraphicsSystem(this.entities);
 	this.physics = new physicsSystem.PhysicsSystem(this.entities);
 	this.input = new inputSystem.InputSystem(this.entities);
+	this.pipes = new pipesSystem.PipesSystem(this.entities);
 };
 
 FlappyBird.prototype.run = function() {
 	this.graphics.run();
 	this.physics.run();
 	this.input.run();
+	this.pipes.run();
+};
+
+FlappyBird.prototype.pause = function() {
+	this.graphics.pause();
+	this.physics.pause();
+	this.input.pause();
+	this.pipes.pause();
 };
 
 exports.FlappyBird = FlappyBird;
-},{"./entities/bird":4,"./entities/pipe":5,"./systems/graphics":7,"./systems/input":8,"./systems/physics":9}],7:[function(require,module,exports){
+},{"./entities/bird":4,"./entities/pipe":5,"./systems/graphics":7,"./systems/input":8,"./systems/physics":9,"./systems/pipes":10}],7:[function(require,module,exports){
 var GraphicsSystem = function(entities) {
 	this.entities = entities;
 	// Canvas is where we draw
@@ -216,4 +228,33 @@ PhysicsSystem.prototype.tick = function() {
 
 exports.PhysicsSystem = PhysicsSystem;
 
-},{}]},{},[6]);
+},{}],10:[function(require,module,exports){
+var pipe = require('../entities/pipe');
+
+var PipesSystem = function(entities) {
+	this.entities = entities;
+	this.canvas = document.getElementById('mainicanvas');
+	this.interval = null;
+};
+
+PipesSystem.prototype.run = function() {
+	// Run the pipe creation interval
+	this.interval = window.setInterval(this.tick.bind(this), 1000 * 2);
+};
+
+PipesSystem.prototype.pause = function() {
+	// Stop the pipe creation interval
+	window.clearInterval(this.interval);
+	this.interval = null;
+};
+
+PipesSystem.prototype.tick = function() {
+	
+	this.entities.push(new pipe.Pipe());
+
+	//Need to setup varied pipe set position
+
+}
+
+exports.PipesSystem = PipesSystem;
+},{"../entities/pipe":5}]},{},[6]);
